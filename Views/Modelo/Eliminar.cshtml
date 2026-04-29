@@ -1,0 +1,18 @@
+﻿@model AgenciaMVC1.Models.Modelo
+
+<div class="alert alert-danger mt-4">
+    <h3>¿Deseas eliminar este modelo?</h3>
+    <p>Ten en cuenta que esto podría afectar los registros de vehículos existentes.</p>
+    <hr>
+    <ul>
+        <li><strong>Marca:</strong> @Model.MarcaVehiculo.Nombre</li>
+        <li><strong>Modelo:</strong> @Model.Nombre</li>
+        <li><strong>Año:</strong> @Model.Anio</li>
+    </ul>
+
+    <form asp-action="Eliminar" method="post">
+        <input type="hidden" name="id" value="@Model.IdModelo" />
+        <button type="submit" class="btn btn-danger">Confirmar Eliminación</button>
+        <a href="/Modelo/Index" class="btn btn-secondary">Cancelar</a>
+    </form>
+</div>

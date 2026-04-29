@@ -1,0 +1,35 @@
+﻿@model IEnumerable<AgenciaMVC1.Models.Vehiculo>
+
+<div class="d-flex justify-content-between mb-3">
+    <h2>Control de Vehículos</h2>
+    <a href="/Vehiculo/Crear" class="btn btn-primary">Registrar Auto</a>
+</div>
+
+<table class="table table-hover border">
+    <thead class="table-light">
+        <tr>
+            <th>Placa</th>
+            <th>Marca y Modelo</th>
+            <th>Color</th>
+            <th>Dueño</th>
+            <th>Km Actual</th>
+            <th>Acciones</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model)
+        {
+            <tr>
+                <td><strong>@item.Placa</strong></td>
+                <td>@item.ModeloVehiculo.MarcaVehiculo.Nombre @item.ModeloVehiculo.Nombre</td>
+                <td>@item.Color</td>
+                <td>@item.Dueño.Nombre @item.Dueño.Apellido</td>
+                <td>@item.KmActual.ToString("N0")</td>
+                <td>
+                    <a href="/Vehiculo/Editar/@item.IdVehiculo" class="btn btn-sm btn-outline-primary">Editar</a>
+                    <a href="/Vehiculo/Eliminar/@item.IdVehiculo" class="btn btn-sm btn-outline-danger">Eliminar</a>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>

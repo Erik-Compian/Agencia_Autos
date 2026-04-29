@@ -1,0 +1,20 @@
+﻿@model AgenciaMVC1.Models.Vehiculo
+
+<div class="container mt-4">
+    <div class="card border-danger shadow">
+        <div class="card-body text-center">
+            <h2 class="text-danger">¿Eliminar Vehículo?</h2>
+            <p class="lead">Estás a punto de borrar el vehículo con placas <strong>@Model.Placa</strong>.</p>
+            <div class="bg-light p-3 rounded mb-4">
+                <p><strong>Dueño:</strong> @Model.Dueño.Nombre @Model.Dueño.Apellido</p>
+                <p><strong>Modelo:</strong> @Model.ModeloVehiculo.Nombre</p>
+            </div>
+
+            <form asp-action="Eliminar" method="post">
+                <input type="hidden" name="id" value="@Model.IdVehiculo" />
+                <button type="submit" class="btn btn-danger btn-lg px-5">Sí, Eliminar</button>
+                <a href="/Vehiculo/Index" class="btn btn-outline-secondary btn-lg px-5">Cancelar</a>
+            </form>
+        </div>
+    </div>
+</div>

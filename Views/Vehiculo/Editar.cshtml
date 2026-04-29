@@ -1,0 +1,47 @@
+﻿@model AgenciaMVC1.Models.Vehiculo
+
+<div class="card shadow-sm mx-auto" style="max-width: 700px;">
+    <div class="card-header bg-warning text-dark">
+        <h4 class="mb-0">Editar Información del Vehículo</h4>
+    </div>
+    <div class="card-body">
+        <form asp-action="Editar" method="post">
+            <input type="hidden" asp-for="IdVehiculo" />
+
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label class="form-label">Dueño (Cliente)</label>
+                    <select asp-for="IdCliente" class="form-control" asp-items="ViewBag.Clientes" required></select>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label class="form-label">Modelo de Auto</label>
+                    <select asp-for="IdModelo" class="form-control" asp-items="ViewBag.Modelos" required></select>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-4 mb-3">
+                    <label class="form-label">Placas</label>
+                    <input type="text" asp-for="Placa" class="form-control" required />
+                </div>
+                <div class="col-md-4 mb-3">
+                    <label class="form-label">Color</label>
+                    <input type="text" asp-for="Color" class="form-control" required />
+                </div>
+                <div class="col-md-4 mb-3">
+                    <label class="form-label">Kilometraje</label>
+                    <input type="number" asp-for="KmActual" class="form-control" required />
+                </div>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Número de Serie (VIN)</label>
+                <input type="text" asp-for="NumSerie" class="form-control" required />
+            </div>
+
+            <hr />
+            <button type="submit" class="btn btn-warning px-4">Actualizar Vehículo</button>
+            <a href="/Vehiculo/Index" class="btn btn-link text-secondary">Cancelar</a>
+        </form>
+    </div>
+</div>

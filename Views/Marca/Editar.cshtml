@@ -1,0 +1,15 @@
+﻿@model AgenciaMVC1.Models.Marca
+
+<h2>Editar Marca</h2>
+
+<form asp-action="Editar" method="post" class="mt-4" style="max-width: 400px;">
+    <input type="hidden" asp-for="IdMarca" />
+
+    <div class="mb-3">
+        <label class="form-label">Nombre de la Marca</label>
+        <input type="text" asp-for="Nombre" class="form-control" required />
+    </div>
+
+    <button type="submit" class="btn btn-warning">Actualizar Cambios</button>
+    <a href="/Marca/Index" class="btn btn-secondary">Cancelar</a>
+</form>

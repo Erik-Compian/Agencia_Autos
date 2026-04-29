@@ -1,0 +1,18 @@
+﻿@model AgenciaMVC1.Models.Marca
+
+<h2>Registrar Marca</h2>
+
+<form asp-action="Crear" method="post" class="mt-4" style="max-width: 400px;">
+    <div class="mb-3">
+        <label class="form-label">Nombre de la Marca</label>
+        <input type="text" asp-for="Nombre" class="form-control" required />
+    </div>
+
+    @if (ViewBag.Error != null)
+    {
+        <div class="alert alert-danger">@ViewBag.Error</div>
+    }
+
+    <button type="submit" class="btn btn-primary">Guardar</button>
+    <a href="/Marca/Index" class="btn btn-secondary">Cancelar</a>
+</form>

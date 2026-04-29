@@ -1,0 +1,17 @@
+﻿@model AgenciaMVC1.Models.Marca
+
+<div class="alert alert-danger mt-4">
+    <h3>¿Estás seguro de eliminar esta marca?</h3>
+    <p>Esta acción no se puede deshacer.</p>
+    <hr>
+    <ul>
+        <li><strong>ID:</strong> @Model.IdMarca</li>
+        <li><strong>Nombre:</strong> @Model.Nombre</li>
+    </ul>
+
+    <form asp-action="Eliminar" method="post">
+        <input type="hidden" name="id" value="@Model.IdMarca" />
+        <button type="submit" class="btn btn-danger">Sí, Eliminar Definitivamente</button>
+        <a href="/Marca/Index" class="btn btn-secondary">Cancelar</a>
+    </form>
+</div>

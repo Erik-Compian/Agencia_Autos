@@ -1,0 +1,26 @@
+﻿@model AgenciaMVC1.Models.Modelo
+
+<h2>Editar Modelo</h2>
+
+<form asp-action="Editar" method="post" class="mt-4" style="max-width: 500px;">
+    <input type="hidden" asp-for="IdModelo" />
+
+    <div class="mb-3">
+        <label class="form-label">Marca</label>
+        <select asp-for="IdMarca" class="form-control" asp-items="ViewBag.Marcas" required>
+        </select>
+    </div>
+
+    <div class="mb-3">
+        <label class="form-label">Nombre del Modelo</label>
+        <input type="text" asp-for="Nombre" class="form-control" required />
+    </div>
+
+    <div class="mb-3">
+        <label class="form-label">Año</label>
+        <input type="number" asp-for="Anio" class="form-control" required />
+    </div>
+
+    <button type="submit" class="btn btn-warning">Guardar Cambios</button>
+    <a href="/Modelo/Index" class="btn btn-secondary">Cancelar</a>
+</form>

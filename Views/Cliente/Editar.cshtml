@@ -1,0 +1,36 @@
+﻿@model AgenciaMVC1.Models.Cliente
+
+<h2>@(Model == null || Model.IdCliente == 0 ? "Registrar Cliente" : "Editar Cliente")</h2>
+
+<form method="post" class="card p-4 shadow-sm mt-3" style="max-width: 600px;">
+    @if (Model != null)
+    {
+        <input type="hidden" asp-for="IdCliente" />
+    }
+
+    <div class="row">
+        <div class="col-md-6 mb-3">
+            <label class="form-label">Nombre</label>
+            <input type="text" asp-for="Nombre" class="form-control" required />
+        </div>
+        <div class="col-md-6 mb-3">
+            <label class="form-label">Apellido</label>
+            <input type="text" asp-for="Apellido" class="form-control" required />
+        </div>
+    </div>
+
+    <div class="mb-3">
+        <label class="form-label">Teléfono</label>
+        <input type="tel" asp-for="Telefono" class="form-control" required />
+    </div>
+
+    <div class="mb-3">
+        <label class="form-label">Correo Electrónico</label>
+        <input type="email" asp-for="Email" class="form-control" required />
+    </div>
+
+    <div class="mt-3">
+        <button type="submit" class="btn btn-success">Guardar Datos</button>
+        <a href="/Cliente/Index" class="btn btn-secondary">Regresar</a>
+    </div>
+</form>

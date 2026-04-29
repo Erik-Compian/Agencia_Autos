@@ -1,0 +1,28 @@
+﻿@model IEnumerable<AgenciaMVC1.Models.Marca>
+
+<h2>Catálogo de Marcas</h2>
+
+<a href="/Marca/Crear" class="btn btn-success mb-3">Agregar Nueva Marca</a>
+
+<table class="table table-bordered table-striped">
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>Nombre de la Marca</th>
+            <th>Acciones</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model)
+        {
+            <tr>
+                <td>@item.IdMarca</td>
+                <td>@item.Nombre</td>
+                <td>
+                    <a href="/Marca/Editar/@item.IdMarca" class="btn btn-sm btn-primary">Editar</a>
+                    <a href="/Marca/Eliminar/@item.IdMarca" class="btn btn-sm btn-danger">Eliminar</a>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>

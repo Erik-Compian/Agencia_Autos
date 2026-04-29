@@ -1,0 +1,38 @@
+﻿@{
+    Layout = null; // Para que no use el menú principal en el login
+}
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Login - Agencia de Automóviles</title>
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <style>
+        body { background: #f8f9fa; display: flex; align-items: center; height: 100vh; }
+        .login-card { width: 100%; max-width: 400px; padding: 15px; margin: auto; }
+    </style>
+</head>
+<body>
+    <div class="login-card card shadow">
+        <div class="card-body">
+            <h3 class="text-center mb-4">Mantenimiento Automotriz</h3>
+            <form asp-action="Login" method="post">
+                <div class="mb-3">
+                    <label class="form-label">Usuario</label>
+                    <input type="text" name="usuario" class="form-control" required />
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Contraseña</label>
+                    <input type="password" name="password" class="form-control" required />
+                </div>
+                @if (ViewBag.Error != null)
+                {
+                    <div class="alert alert-danger">@ViewBag.Error</div>
+                }
+                <button type="submit" class="btn btn-primary w-100">Ingresar</button>
+            </form>
+        </div>
+    </div>
+</body>
+</html>

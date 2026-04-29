@@ -1,0 +1,25 @@
+﻿@model AgenciaMVC1.Models.Modelo
+
+<h2>Registrar Nuevo Modelo</h2>
+
+<form asp-action="Crear" method="post" class="mt-4" style="max-width: 500px;">
+    <div class="mb-3">
+        <label class="form-label">Marca</label>
+        <select asp-for="IdMarca" class="form-control" asp-items="ViewBag.Marcas">
+            <option value="">-- Seleccione una Marca --</option>
+        </select>
+    </div>
+
+    <div class="mb-3">
+        <label class="form-label">Nombre del Modelo (Ej. Dart, Civic, etc.)</label>
+        <input type="text" asp-for="Nombre" class="form-control" required />
+    </div>
+
+    <div class="mb-3">
+        <label class="form-label">Año</label>
+        <input type="number" asp-for="Anio" class="form-control" min="1900" max="2027" required />
+    </div>
+
+    <button type="submit" class="btn btn-primary">Guardar Modelo</button>
+    <a href="/Modelo/Index" class="btn btn-secondary">Cancelar</a>
+</form>

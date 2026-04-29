@@ -1,0 +1,17 @@
+﻿@model AgenciaMVC1.Models.Cliente
+
+<div class="card border-danger shadow-sm mt-4">
+    <div class="card-header bg-danger text-white">
+        <h4 class="mb-0">Confirmar Eliminación</h4>
+    </div>
+    <div class="card-body">
+        <p>¿Estás seguro de que deseas eliminar permanentemente al cliente <strong>@Model.Nombre @Model.Apellido</strong>?</p>
+        <p class="text-muted small">Esta acción no podrá deshacerse si el cliente no tiene registros asociados.</p>
+
+        <form asp-action="Eliminar" method="post">
+            <input type="hidden" name="id" value="@Model.IdCliente" />
+            <button type="submit" class="btn btn-danger">Confirmar y Eliminar</button>
+            <a href="/Cliente/Index" class="btn btn-light border">Cancelar</a>
+        </form>
+    </div>
+</div>
