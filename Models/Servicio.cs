@@ -26,5 +26,6 @@ namespace AgenciaMVC1.Models
 
         // Lista de refacciones utilizadas en este servicio específico
         public List<ServicioRefaccion> Refacciones { get; set; } = new List<ServicioRefaccion>();
+        public DateTime? FechaProximoServicio { get; set; }
     }
 }

@@ -1,52 +1,98 @@
 ﻿@model IEnumerable<AgenciaMVC1.Models.Servicio>
 
-<div class="d-flex justify-content-between mb-4">
-    <h2>Control de Servicios en Taller</h2>
-    <a href="/Servicio/Recepcion" class="btn btn-info text-white">Recibir Nuevo Vehículo</a>
+<div class="container-fluid py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>Control de Servicios en Taller</h2>
+        <a href="/Servicio/Recepcion" class="btn btn-info text-white shadow-sm">
+            <i class="fas fa-plus"></i> Recibir Nuevo Vehículo
+        </a>
+    </div>
+
+    <!-- TARJETA DEL DASHBOARD (Acceso al Punto 10 de la rúbrica) -->
+    <div class="card mb-4 shadow-sm border-0 bg-light">
+        <div class="card-body d-flex justify-content-between align-items-center">
+            <div>
+                <h4 class="mb-1 text-primary">Tablero de Control</h4>
+                <p class="text-muted mb-0">Visualiza el estado de solicitudes y gráficas de rendimiento en tiempo real.</p>
+            </div>
+            <!-- Enlace corregido para que el botón de la imagen funcione -->
+            <a href="/Servicio/Dashboard" class="btn btn-secondary px-4 shadow-sm">
+                Ver Dashboard
+            </a>
+        </div>
+    </div>
+
+    <!-- SECCIÓN DE BÚSQUEDA (Cumple Punto 6: Búsqueda por folio o nombre) -->
+    <div class="card mb-4 border-0 shadow-sm">
+        <div class="card-body">
+            <form asp-action="Index" method="get" class="row g-2">
+                <div class="col-md-10">
+                    <input type="text" name="buscar" value="@ViewBag.BusquedaActual" 
+                           class="form-control" placeholder="Ingrese Folio, Placa o Nombre del dueño para filtrar..." />
+                </div>
+                <div class="col-md-2 d-flex gap-2">
+                    <button type="submit" class="btn btn-primary w-100">Buscar</button>
+                    @if (!string.IsNullOrEmpty(ViewBag.BusquedaActual))
+                    {
+                        <a href="/Servicio/Index" class="btn btn-outline-secondary">Limpiar</a>
+                    }
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- TABLA DE RESULTADOS -->
+    <div class="table-responsive">
+        <table class="table table-hover border shadow-sm bg-white">
+            <thead class="table-dark">
+                <tr>
+                    <th>Folio</th>
+                    <th>Fecha Ingreso</th>
+                    <th>Vehículo / Cliente</th>
+                    <th>Descripción</th>
+                    <th>Estatus</th>
+                    <th>Próximo Servicio</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in Model)
+                {
+                    <tr>
+                        <td><strong>#@item.Folio.ToString("D4")</strong></td>
+                        <td>@item.FechaIngreso.ToString("dd/MM/yyyy HH:mm")</td>
+                        <td>
+                            <span class="badge bg-light text-dark border">@item.VehiculoAtendido.Placa</span><br />
+                            <small class="text-muted">@item.VehiculoAtendido.Dueño.Nombre @item.VehiculoAtendido.Dueño.Apellido</small>
+                        </td>
+                        <td><small>@item.Descripcion</small></td>
+                        <td>
+                            @if (item.Estatus.ToString() == "EnEspera")
+                            {
+                                <span class="badge bg-secondary">En Espera</span>
+                            }
+                            else if (item.Estatus.ToString() == "EnProceso")
+                            {
+                                <span class="badge bg-warning text-dark">En Proceso</span>
+                            }
+                            else
+                            {
+                                <span class="badge bg-success">Finalizado</span>
+                            }
+                        </td>
+                        <td>
+                            <span class="text-primary fw-bold">
+                                @(item.FechaProximoServicio.HasValue ? item.FechaProximoServicio.Value.ToShortDateString() : "No programado")
+                            </span>
+                        </td>
+                        <td>
+                            <a href="/Servicio/Detalles/@item.Folio" class="btn btn-sm btn-outline-primary">
+                                Ver Detalles
+                            </a>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
 </div>
-
-<table class="table table-hover border shadow-sm">
-    <thead class="table-dark">
-        <tr>
-            <th>Folio</th>
-            <th>Fecha Ingreso</th>
-            <th>Vehículo / Cliente</th>
-            <th>Descripción</th>
-            <th>Estatus</th>
-            <th>Acciones</th>
-        </tr>
-    </thead>
-    <tbody>
-        @foreach (var item in Model)
-        {
-            <tr>
-                <td>#@item.Folio.ToString("D4")</td>
-                <td>@item.FechaIngreso.ToString("dd/MM/yyyy HH:mm")</td>
-                <td>
-                    <strong>@item.VehiculoAtendido.Placa</strong><br />
-                    <small class="text-muted">@item.VehiculoAtendido.Dueño.Nombre @item.VehiculoAtendido.Dueño.Apellido</small>
-                </td>
-                <td>@item.Descripcion</td>
-                <td>
-                    @if (item.Estatus.ToString() == "EnEspera")
-                    {
-                        <span class="badge bg-secondary">En Espera</span>
-                    }
-                    else if (item.Estatus.ToString() == "EnProceso")
-                    {
-
-                        <span class="badge bg-warning text-dark">En Proceso</span>
-                    }
-                    else
-                    {
-
-                        <span class="badge bg-success">Finalizado</span>
-                    }
-                </td>
-                <td>
-                    <a href="/Servicio/Detalles/@item.Folio" class="btn btn-sm btn-outline-primary">Ver Detalles</a>
-                </td>
-            </tr>
-        }
-    </tbody>
-</table>

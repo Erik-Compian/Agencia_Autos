@@ -88,6 +88,23 @@
             </div>
         </div>
     </div>
+    <div class="card shadow-sm border-primary mt-3">
+    <div class="card-header bg-primary text-white">
+        <h5 class="mb-0">Programar Próximo Servicio</h5>
+    </div>
+    <div class="card-body">
+        <form asp-action="GuardarProximoServicio" method="post" class="row g-2">
+            <input type="hidden" name="folio" value="@Model.Folio" />
+            <div class="col-8">
+                <input type="date" name="fecha" class="form-control" 
+                       value="@(Model.FechaProximoServicio?.ToString("yyyy-MM-dd"))" required />
+            </div>
+            <div class="col-4">
+                <button type="submit" class="btn btn-primary w-100">Guardar</button>
+            </div>
+        </form>
+    </div>
+</div>
 </div>
 
 <div class="card shadow-sm mt-4 border-info">

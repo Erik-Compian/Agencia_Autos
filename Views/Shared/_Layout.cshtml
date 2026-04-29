@@ -38,6 +38,9 @@
                                 <a class="dropdown-item" asp-controller="Refaccion" asp-action="Index">Refacciones</a>
                             </ul>
                         </li>
+                        <li class="nav-item">
+                             <a class="nav-link text-dark fw-bold" asp-area="" asp-controller="Servicio" asp-action="Dashboard">📈 Dashboard</a>
+                        </li>
                     </ul>
 
                     <ul class="navbar-nav">
@@ -48,6 +51,11 @@
                         </li>
                         <li class="nav-item">
                             <a class="btn btn-outline-danger btn-sm" asp-controller="Account" asp-action="Logout">Cerrar Sesión</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link text-dark" asp-controller="Servicio" asp-action="Agenda">
+                                 <i class="bi bi-calendar3"></i> Agenda
+                            </a>
                         </li>
                     </ul>
                 </div>

@@ -1,0 +1,65 @@
+@model Dictionary<string, int>
+@{
+    ViewData["Title"] = "Tablero de Control";
+}
+
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>📊 Tablero de Estatus de Solicitudes</h2>
+        <a href="/Servicio/Index" class="btn btn-secondary">Volver a la Lista</a>
+    </div>
+
+    <div class="card mb-4 shadow-sm border-0 bg-light">
+        <div class="card-body">
+            <form method="get" asp-action="Dashboard" class="row g-3 align-items-end">
+                <div class="col-md-4">
+                    <label class="form-label fw-bold">Filtrar por Día:</label>
+                    <input type="date" name="fecha" value="@ViewBag.FechaFiltro" class="form-control" />
+                </div>
+                <div class="col-md-4">
+                    <button type="submit" class="btn btn-primary">Aplicar Filtro</button>
+                    <a href="/Servicio/Dashboard" class="btn btn-outline-dark">Ver Total Histórico</a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-6 offset-md-3">
+            <div class="card shadow border-0">
+                <div class="card-body text-center">
+                    <canvas id="statusChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script>
+    const ctx = document.getElementById('statusChart').getContext('2d');
+    const myChart = new Chart(ctx, {
+        type: 'doughnut', // Gráfica circular de estatus
+        data: {
+            labels: ['En Espera', 'En Proceso', 'Finalizado'],
+            datasets: [{
+                label: 'Solicitudes',
+                data: [@Model["EnEspera"], @Model["EnProceso"], @Model["Finalizado"]],
+                backgroundColor: [
+                    '#6c757d', // Gris (Espera)
+                    '#ffc107', // Amarillo (Proceso)
+                    '#198754'  // Verde (Finalizado)
+                ],
+                hoverOffset: 4
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: { position: 'bottom' },
+                title: { display: true, text: 'Distribución de Solicitudes por Estatus' }
+            }
+        }
+    });
+</script>

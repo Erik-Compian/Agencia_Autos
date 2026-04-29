@@ -1,0 +1,38 @@
+﻿@model IEnumerable<AgenciaMVC1.Models.Servicio>
+
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>📅 Agenda de Próximos Servicios</h2>
+        <a href="/Servicio/Index" class="btn btn-secondary">Volver al Listado</a>
+    </div>
+
+    <div class="alert alert-info">
+        <i class="bi bi-info-circle"></i> Aquí se muestran los clientes que deben regresar para mantenimiento preventivo.
+    </div>
+
+    <table class="table table-striped border shadow-sm">
+        <thead class="table-dark">
+            <tr>
+                <th>Fecha de Cita</th>
+                <th>Vehículo (Placa)</th>
+                <th>Cliente</th>
+                <th>Teléfono de Contacto</th>
+                <th>Acciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model)
+            {
+                <tr>
+                    <td class="fw-bold text-primary">@item.FechaProximoServicio.Value.ToShortDateString()</td>
+                    <td><span class="badge bg-light text-dark border">@item.VehiculoAtendido.Placa</span></td>
+                    <td>@item.VehiculoAtendido.Dueño.Nombre @item.VehiculoAtendido.Dueño.Apellido</td>
+                    <td>@item.VehiculoAtendido.Dueño.Telefono</td>
+                    <td>
+                        <a href="/Servicio/Detalles/@item.Folio" class="btn btn-sm btn-outline-primary">Ver Historial</a>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
