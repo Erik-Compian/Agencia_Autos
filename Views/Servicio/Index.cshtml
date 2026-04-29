@@ -1,0 +1,52 @@
+﻿@model IEnumerable<AgenciaMVC1.Models.Servicio>
+
+<div class="d-flex justify-content-between mb-4">
+    <h2>Control de Servicios en Taller</h2>
+    <a href="/Servicio/Recepcion" class="btn btn-info text-white">Recibir Nuevo Vehículo</a>
+</div>
+
+<table class="table table-hover border shadow-sm">
+    <thead class="table-dark">
+        <tr>
+            <th>Folio</th>
+            <th>Fecha Ingreso</th>
+            <th>Vehículo / Cliente</th>
+            <th>Descripción</th>
+            <th>Estatus</th>
+            <th>Acciones</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model)
+        {
+            <tr>
+                <td>#@item.Folio.ToString("D4")</td>
+                <td>@item.FechaIngreso.ToString("dd/MM/yyyy HH:mm")</td>
+                <td>
+                    <strong>@item.VehiculoAtendido.Placa</strong><br />
+                    <small class="text-muted">@item.VehiculoAtendido.Dueño.Nombre @item.VehiculoAtendido.Dueño.Apellido</small>
+                </td>
+                <td>@item.Descripcion</td>
+                <td>
+                    @if (item.Estatus.ToString() == "EnEspera")
+                    {
+                        <span class="badge bg-secondary">En Espera</span>
+                    }
+                    else if (item.Estatus.ToString() == "EnProceso")
+                    {
+
+                        <span class="badge bg-warning text-dark">En Proceso</span>
+                    }
+                    else
+                    {
+
+                        <span class="badge bg-success">Finalizado</span>
+                    }
+                </td>
+                <td>
+                    <a href="/Servicio/Detalles/@item.Folio" class="btn btn-sm btn-outline-primary">Ver Detalles</a>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>

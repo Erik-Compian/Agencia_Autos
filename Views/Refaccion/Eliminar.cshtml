@@ -1,0 +1,11 @@
+﻿@model AgenciaMVC1.Models.Refaccion
+
+<div class="alert alert-danger mt-4 text-center">
+    <h3>¿Deseas eliminar esta refacción del inventario?</h3>
+    <p><strong>@Model.Codigo - @Model.Nombre</strong></p>
+    <form asp-action="Eliminar" method="post">
+        <input type="hidden" name="id" value="@Model.IdRefaccion" />
+        <button type="submit" class="btn btn-danger">Confirmar Eliminación</button>
+        <a href="/Refaccion/Index" class="btn btn-secondary">Cancelar</a>
+    </form>
+</div>

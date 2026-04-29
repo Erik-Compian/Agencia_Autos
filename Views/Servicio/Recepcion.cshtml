@@ -1,0 +1,49 @@
+﻿@{
+    ViewData["Title"] = "Recepción de Vehículo";
+}
+
+<div class="card shadow-sm mx-auto mt-4" style="max-width: 600px;">
+    <div class="card-header bg-info text-white">
+        <h4 class="mb-0"><i class="bi bi-clipboard-check"></i> Nueva Orden de Servicio</h4>
+    </div>
+    <div class="card-body">
+        <form asp-action="Recepcion" method="post">
+
+            <div class="mb-3">
+                <label class="form-label">Vehículo (Placa)</label>
+                <select name="idVehiculo" class="form-select" asp-items="ViewBag.Vehiculos" required>
+                    <option value="">-- Seleccione un vehículo --</option>
+                </select>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Tipo de Mantenimiento</label>
+                <div class="form-check">
+                    <input class="form-check-input" type="radio" name="tipo" id="tipoPrev" value="Preventivo" required>
+                    <label class="form-check-label" for="tipoPrev">
+                        <strong>Preventivo</strong> (Revisión de rutina, niveles, filtros)
+                    </label>
+                </div>
+                <div class="form-check">
+                    <input class="form-check-input" type="radio" name="tipo" id="tipoCorr" value="Correctivo" required>
+                    <label class="form-check-label" for="tipoCorr">
+                        <strong>Correctivo</strong> (Reparación de fallas, cambio de piezas rotas)
+                    </label>
+                </div>
+            </div>
+
+            <div class="mb-4">
+                <label class="form-label">¿Quién entrega el vehículo?</label>
+                <input type="text" name="quienEntrego" class="form-control" placeholder="Ej. El dueño, un familiar, chofer..." required />
+            </div>
+
+            @if (ViewBag.Error != null)
+            {
+                <div class="alert alert-danger">@ViewBag.Error</div>
+            }
+
+            <button type="submit" class="btn btn-info text-white px-4">Generar Servicio</button>
+            <a href="/Servicio/Index" class="btn btn-secondary">Cancelar</a>
+        </form>
+    </div>
+</div>

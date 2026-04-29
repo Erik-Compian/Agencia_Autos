@@ -1,0 +1,62 @@
+﻿@model AgenciaMVC1.Models.Servicio
+@{
+    Layout = null;
+}
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Ticket_#@Model.Folio</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <style>
+        body {
+            font-family: 'Courier New', Courier, monospace;
+            width: 80mm;
+            margin: 0 auto;
+            padding: 15px;
+            border: 1px solid #eee;
+        }
+
+        .header {
+            text-align: center;
+            border-bottom: 1px dashed #000;
+            margin-bottom: 10px;
+        }
+
+        @@media print {
+            .no-print {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body onload="window.print()">
+    <div class="header">
+        <h5>AGENCIA DE AUTOS</h5>
+        <p>ORDEN DE SERVICIO #@Model.Folio.ToString("D4")</p>
+    </div>
+
+    <p><strong>Fecha:</strong> @Model.FechaIngreso.ToShortDateString()</p>
+    <p><strong>Cliente:</strong> @Model.VehiculoAtendido.Dueño.Nombre @Model.VehiculoAtendido.Dueño.Apellido</p>
+    <p><strong>Auto:</strong> @Model.VehiculoAtendido.Placa</p>
+    <p><strong>Entregado por:</strong> @Model.QuienEntrego</p>
+    <hr>
+    <h6>Detalle de Refacciones:</h6>
+    @foreach (var item in Model.Refacciones)
+    {
+        <div class="d-flex justify-content-between" style="font-size: 0.85em;">
+            <span>@item.Cantidad x @item.RefaccionUtilizada.Nombre</span>
+            <span>$@item.PrecioAplicado.ToString("0.00")</span>
+        </div>
+    }
+    <hr>
+    <div class="d-flex justify-content-between fw-bold">
+        <span>TOTAL:</span>
+        <span>$@Model.Refacciones.Sum(r => r.PrecioAplicado).ToString("0.00")</span>
+    </div>
+
+    <div class="text-center mt-4 no-print">
+        <button onclick="window.close()" class="btn btn-sm btn-secondary">Cerrar Ventana</button>
+    </div>
+</body>
+</html>
