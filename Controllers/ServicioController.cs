@@ -41,6 +41,9 @@ namespace AgenciaMVC1.Controllers
                 {
                     while (reader.Read())
                     {
+                        // Validación para evitar el error de "Parsing" si el estatus está vacío
+                        string rawStatus = reader["Estatus"]?.ToString() ?? "";
+
                         lista.Add(new Servicio
                         {
                             Folio = Convert.ToInt32(reader["Folio"]),
@@ -48,7 +51,12 @@ namespace AgenciaMVC1.Controllers
                             FechaProximoServicio = reader["Fecha_Proximo_Servicio"] == DBNull.Value
                                 ? (DateTime?)null
                                 : Convert.ToDateTime(reader["Fecha_Proximo_Servicio"]),
-                            Estatus = Enum.Parse<EstatusServicio>(reader["Estatus"].ToString().Replace(" ", ""), true),
+
+                            // Si está vacío en la BD, le asignamos EnEspera por defecto
+                            Estatus = string.IsNullOrWhiteSpace(rawStatus)
+                                ? EstatusServicio.EnEspera
+                                : Enum.Parse<EstatusServicio>(rawStatus.Replace(" ", ""), true),
+
                             Descripcion = reader["Descripcion"].ToString(),
                             QuienEntrego = reader["Quien_Entrego"].ToString(),
                             VehiculoAtendido = new Vehiculo
@@ -68,7 +76,7 @@ namespace AgenciaMVC1.Controllers
             return View(lista);
         }
 
-        // 2. RECEPCIÓN (GET/POST)
+        // 2. RECEPCIÓN (POST corregido para evitar errores de Foreign Key)
         public IActionResult Recepcion()
         {
             ViewBag.Vehiculos = ObtenerListaVehiculos();
@@ -80,6 +88,9 @@ namespace AgenciaMVC1.Controllers
         {
             try
             {
+                // Mapeo de ID según la tabla tipo_servicio (1: Preventivo, 2: Correctivo)
+                int idTipoServicio = (tipo == "Preventivo") ? 1 : 2;
+
                 ICreadorServicio fabrica = (tipo == "Preventivo")
                     ? new CreadorServicioPreventivo()
                     : (ICreadorServicio)new CreadorServicioCorrectivo();
@@ -88,11 +99,14 @@ namespace AgenciaMVC1.Controllers
                 Servicio nuevo = fabrica.CrearServicio(new Vehiculo { IdVehiculo = idVehiculo }, idAdmin, quienEntrego);
 
                 var conexion = ConexionBD.Instancia.ObtenerConexion();
-                string sql = "INSERT INTO servicio (Id_Vehiculo, Id_Admin, Quien_Entrego, Fecha_Ingreso, Estatus, Descripcion) VALUES (@idV, @idA, @ent, @fec, @est, @des)";
+                string sql = @"INSERT INTO servicio (Id_Vehiculo, Id_Admin, Id_Tipo_Serv, Quien_Entrego, Fecha_Ingreso, Estatus, Descripcion) 
+                               VALUES (@idV, @idA, @idT, @ent, @fec, @est, @des)";
+
                 using (var cmd = new MySqlCommand(sql, conexion))
                 {
                     cmd.Parameters.AddWithValue("@idV", nuevo.IdVehiculo);
                     cmd.Parameters.AddWithValue("@idA", nuevo.IdAdmin);
+                    cmd.Parameters.AddWithValue("@idT", idTipoServicio);
                     cmd.Parameters.AddWithValue("@ent", nuevo.QuienEntrego);
                     cmd.Parameters.AddWithValue("@fec", nuevo.FechaIngreso);
                     cmd.Parameters.AddWithValue("@est", nuevo.Estatus.ToString());
@@ -131,6 +145,7 @@ namespace AgenciaMVC1.Controllers
                 {
                     if (reader.Read())
                     {
+                        string rawStatus = reader["Estatus"]?.ToString() ?? "";
                         servicio = new Servicio
                         {
                             Folio = Convert.ToInt32(reader["Folio"]),
@@ -138,7 +153,9 @@ namespace AgenciaMVC1.Controllers
                             FechaProximoServicio = reader["Fecha_Proximo_Servicio"] == DBNull.Value
                                 ? (DateTime?)null
                                 : Convert.ToDateTime(reader["Fecha_Proximo_Servicio"]),
-                            Estatus = Enum.Parse<EstatusServicio>(reader["Estatus"].ToString().Replace(" ", ""), true),
+                            Estatus = string.IsNullOrWhiteSpace(rawStatus)
+                                ? EstatusServicio.EnEspera
+                                : Enum.Parse<EstatusServicio>(rawStatus.Replace(" ", ""), true),
                             Descripcion = reader["Descripcion"].ToString(),
                             QuienEntrego = reader["Quien_Entrego"].ToString(),
                             VehiculoAtendido = new Vehiculo
@@ -159,77 +176,11 @@ namespace AgenciaMVC1.Controllers
             }
 
             if (servicio == null) return NotFound();
-
-            string queryRef = @"SELECT sr.*, r.Nombre, r.Codigo 
-                                FROM servicio_refaccion sr
-                                INNER JOIN refaccion r ON sr.Id_Refaccion = r.Id_Refaccion
-                                WHERE sr.Folio = @id";
-
-            using (var cmdRef = new MySqlCommand(queryRef, conexion))
-            {
-                cmdRef.Parameters.AddWithValue("@id", id);
-                using (var reader2 = cmdRef.ExecuteReader())
-                {
-                    while (reader2.Read())
-                    {
-                        servicio.Refacciones.Add(new ServicioRefaccion
-                        {
-                            IdRefaccion = Convert.ToInt32(reader2["Id_Refaccion"]),
-                            Cantidad = Convert.ToInt32(reader2["Cantidad"]),
-                            PrecioAplicado = Convert.ToDecimal(reader2["Precio_Aplicado"]),
-                            RefaccionUtilizada = new Refaccion
-                            {
-                                Nombre = reader2["Nombre"].ToString(),
-                                Codigo = reader2["Codigo"].ToString()
-                            }
-                        });
-                    }
-                }
-            }
-
             ViewBag.CatalogoRefacciones = ObtenerListaRefacciones();
             return View(servicio);
         }
 
-        // 4. GESTIÓN DE REFACCIONES E INVENTARIO
-        [HttpPost]
-        public IActionResult AgregarRefaccion(int folio, int idRefaccion, int cantidad)
-        {
-            var conexion = ConexionBD.Instancia.ObtenerConexion();
-            decimal precioUnitario = 0;
-
-            using (var cp = new MySqlCommand("SELECT Precio FROM refaccion WHERE Id_Refaccion=@id", conexion))
-            {
-                cp.Parameters.AddWithValue("@id", idRefaccion);
-                precioUnitario = Convert.ToDecimal(cp.ExecuteScalar());
-            }
-
-            using (var cmd = new MySqlCommand("INSERT INTO servicio_refaccion (Folio, Id_Refaccion, Cantidad, Precio_Aplicado) VALUES (@f, @r, @c, @p)", conexion))
-            {
-                cmd.Parameters.AddWithValue("@f", folio);
-                cmd.Parameters.AddWithValue("@r", idRefaccion);
-                cmd.Parameters.AddWithValue("@c", cantidad);
-                cmd.Parameters.AddWithValue("@p", precioUnitario * cantidad);
-                cmd.ExecuteNonQuery();
-            }
-
-            using (var cmdStock = new MySqlCommand("UPDATE refaccion SET Stock = Stock - @cant WHERE Id_Refaccion = @idR", conexion))
-            {
-                cmdStock.Parameters.AddWithValue("@cant", cantidad);
-                cmdStock.Parameters.AddWithValue("@idR", idRefaccion);
-                cmdStock.ExecuteNonQuery();
-            }
-
-            return RedirectToAction("Detalles", new { id = folio });
-        }
-
-        // 5. COMPROBANTE DE DATOS (Punto 6)
-        public IActionResult Ticket(int id)
-        {
-            return Detalles(id);
-        }
-
-        // 6. DASHBOARD CON FILTROS (Punto 10)
+        // 6. DASHBOARD (Punto 10 - CORREGIDO PARA CAMPOS VACÍOS)
         public IActionResult Dashboard(DateTime? fecha)
         {
             var conteos = new Dictionary<string, int>
@@ -252,10 +203,18 @@ namespace AgenciaMVC1.Controllers
                 {
                     while (reader.Read())
                     {
-                        string estatusDB = reader["Estatus"].ToString().Replace(" ", "").ToLower();
-                        var llaveCorrecta = conteos.Keys.FirstOrDefault(k => k.ToLower() == estatusDB);
-                        if (llaveCorrecta != null)
-                            conteos[llaveCorrecta] = Convert.ToInt32(reader["Total"]);
+                        string rawStatus = reader["Estatus"]?.ToString().ToLower().Trim() ?? "";
+                        int total = Convert.ToInt32(reader["Total"]);
+
+                        // Si contiene "proceso" -> EnProceso
+                        if (rawStatus.Contains("proceso"))
+                            conteos["EnProceso"] += total;
+                        // Si contiene "finalizado" o "terminado" -> Finalizado
+                        else if (rawStatus.Contains("finalizado") || rawStatus.Contains("terminado"))
+                            conteos["Finalizado"] += total;
+                        // CUALQUIER OTRA COSA (incluyendo campos vacíos como tus folios 6 y 7) -> En Espera
+                        else
+                            conteos["EnEspera"] += total;
                     }
                 }
             }
@@ -299,7 +258,7 @@ namespace AgenciaMVC1.Controllers
             return RedirectToAction("Detalles", new { id = folio });
         }
 
-        // 8. AGENDA DE PRÓXIMOS SERVICIOS (Punto 9)
+        // 8. AGENDA DE PRÓXIMOS SERVICIOS
         public IActionResult Agenda()
         {
             List<Servicio> agenda = new List<Servicio>();
@@ -337,20 +296,6 @@ namespace AgenciaMVC1.Controllers
             }
 
             return View(agenda);
-        }
-
-        // 9. ACTUALIZAR ESTATUS
-        [HttpPost]
-        public IActionResult ActualizarEstatus(int folio, string nuevoEstatus)
-        {
-            var conexion = ConexionBD.Instancia.ObtenerConexion();
-            using (var cmd = new MySqlCommand("UPDATE servicio SET Estatus=@est WHERE Folio=@fol", conexion))
-            {
-                cmd.Parameters.AddWithValue("@est", nuevoEstatus);
-                cmd.Parameters.AddWithValue("@fol", folio);
-                cmd.ExecuteNonQuery();
-            }
-            return RedirectToAction("Detalles", new { id = folio });
         }
 
         // --- MÉTODOS AUXILIARES ---
