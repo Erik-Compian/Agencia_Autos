@@ -15,7 +15,7 @@ namespace AgenciaMVC1.Controllers
     [ValidarSesion]
     public class ServicioController : Controller
     {
-        // 1. LISTADO CON BÚSQUEDA (Cumple Punto 6 y 9)
+        
         public IActionResult Index(string buscar)
         {
             List<Servicio> lista = new List<Servicio>();
@@ -41,6 +41,16 @@ namespace AgenciaMVC1.Controllers
                 {
                     while (reader.Read())
                     {
+                        // 1. Leemos el texto de la BD primero
+                        string estatusDB = reader["Estatus"]?.ToString() ?? "";
+
+                        // 2. Intentamos convertirlo, si falla o está vacío, le ponemos un default
+                        EstatusServicio estatusSeguro = EstatusServicio.EnEspera; // Asumiendo que "EnEspera" existe en tu Enum
+                        if (!string.IsNullOrWhiteSpace(estatusDB))
+                        {
+                            Enum.TryParse<EstatusServicio>(estatusDB.Replace(" ", ""), true, out estatusSeguro);
+                        }
+
                         lista.Add(new Servicio
                         {
                             Folio = Convert.ToInt32(reader["Folio"]),
@@ -48,7 +58,9 @@ namespace AgenciaMVC1.Controllers
                             FechaProximoServicio = reader["Fecha_Proximo_Servicio"] == DBNull.Value
                                 ? (DateTime?)null
                                 : Convert.ToDateTime(reader["Fecha_Proximo_Servicio"]),
-                            Estatus = Enum.Parse<EstatusServicio>(reader["Estatus"].ToString().Replace(" ", ""), true),
+
+                            Estatus = estatusSeguro, // Usamos la variable segura que acabamos de crear
+
                             Descripcion = reader["Descripcion"].ToString(),
                             QuienEntrego = reader["Quien_Entrego"].ToString(),
                             VehiculoAtendido = new Vehiculo
@@ -76,11 +88,13 @@ namespace AgenciaMVC1.Controllers
         }
 
         [HttpPost]
-        public IActionResult Recepcion(int idVehiculo, string tipo, string quienEntrego)
+        public IActionResult Recepcion(int idVehiculo, int Id_Tipo_Serv, string quienEntrego)
         {
             try
             {
-                ICreadorServicio fabrica = (tipo == "Preventivo")
+                // Volvemos a usar la lógica original para crear los objetos con el patrón Factory (pero ahora basado en el ID)
+                string tipoString = Id_Tipo_Serv == 1 ? "Preventivo" : "Correctivo";
+                ICreadorServicio fabrica = (tipoString == "Preventivo")
                     ? new CreadorServicioPreventivo()
                     : (ICreadorServicio)new CreadorServicioCorrectivo();
 
@@ -88,7 +102,10 @@ namespace AgenciaMVC1.Controllers
                 Servicio nuevo = fabrica.CrearServicio(new Vehiculo { IdVehiculo = idVehiculo }, idAdmin, quienEntrego);
 
                 var conexion = ConexionBD.Instancia.ObtenerConexion();
-                string sql = "INSERT INTO servicio (Id_Vehiculo, Id_Admin, Quien_Entrego, Fecha_Ingreso, Estatus, Descripcion) VALUES (@idV, @idA, @ent, @fec, @est, @des)";
+
+                // ¡AQUÍ ESTÁ LA MAGIA! Agregamos el Id_Tipo_Serv a la consulta SQL
+                string sql = "INSERT INTO servicio (Id_Vehiculo, Id_Admin, Quien_Entrego, Fecha_Ingreso, Estatus, Descripcion, Id_Tipo_Serv) VALUES (@idV, @idA, @ent, @fec, @est, @des, @idTipo)";
+
                 using (var cmd = new MySqlCommand(sql, conexion))
                 {
                     cmd.Parameters.AddWithValue("@idV", nuevo.IdVehiculo);
@@ -97,6 +114,10 @@ namespace AgenciaMVC1.Controllers
                     cmd.Parameters.AddWithValue("@fec", nuevo.FechaIngreso);
                     cmd.Parameters.AddWithValue("@est", nuevo.Estatus.ToString());
                     cmd.Parameters.AddWithValue("@des", nuevo.Descripcion);
+
+                    // Pasamos el parámetro que viene desde tu HTML
+                    cmd.Parameters.AddWithValue("@idTipo", Id_Tipo_Serv);
+
                     cmd.ExecuteNonQuery();
                 }
                 return RedirectToAction("Index");
@@ -131,6 +152,16 @@ namespace AgenciaMVC1.Controllers
                 {
                     if (reader.Read())
                     {
+                        // 1. Leemos el texto de la BD primero
+                        string estatusDB = reader["Estatus"]?.ToString() ?? "";
+
+                        // 2. Intentamos convertirlo; si falla o está vacío, le ponemos "EnEspera" por defecto
+                        EstatusServicio estatusSeguro = EstatusServicio.EnEspera;
+                        if (!string.IsNullOrWhiteSpace(estatusDB))
+                        {
+                            Enum.TryParse<EstatusServicio>(estatusDB.Replace(" ", ""), true, out estatusSeguro);
+                        }
+
                         servicio = new Servicio
                         {
                             Folio = Convert.ToInt32(reader["Folio"]),
@@ -138,7 +169,9 @@ namespace AgenciaMVC1.Controllers
                             FechaProximoServicio = reader["Fecha_Proximo_Servicio"] == DBNull.Value
                                 ? (DateTime?)null
                                 : Convert.ToDateTime(reader["Fecha_Proximo_Servicio"]),
-                            Estatus = Enum.Parse<EstatusServicio>(reader["Estatus"].ToString().Replace(" ", ""), true),
+
+                            Estatus = estatusSeguro, // ¡Aquí usamos la variable segura!
+
                             Descripcion = reader["Descripcion"].ToString(),
                             QuienEntrego = reader["Quien_Entrego"].ToString(),
                             VehiculoAtendido = new Vehiculo
@@ -220,6 +253,50 @@ namespace AgenciaMVC1.Controllers
                 cmdStock.ExecuteNonQuery();
             }
 
+            return RedirectToAction("Detalles", new { id = folio });
+        }
+        [HttpPost]
+        public IActionResult EliminarRefaccion(int folio, int idRefaccion)
+        {
+            var conexionGlobal = ConexionBD.Instancia.ObtenerConexion();
+            string cadenaConexion = conexionGlobal.ConnectionString;
+
+            using (var conexionAislada = new MySqlConnection(cadenaConexion))
+            {
+                conexionAislada.Open();
+
+                // 1. Primero averiguamos cuántas piezas se habían usado en este servicio
+                int cantidadDevolver = 0;
+                using (var cmdSelect = new MySqlCommand("SELECT Cantidad FROM servicio_refaccion WHERE Folio = @fol AND Id_Refaccion = @idR", conexionAislada))
+                {
+                    cmdSelect.Parameters.AddWithValue("@fol", folio);
+                    cmdSelect.Parameters.AddWithValue("@idR", idRefaccion);
+                    var result = cmdSelect.ExecuteScalar();
+                    if (result != null) cantidadDevolver = Convert.ToInt32(result);
+                }
+
+                // Si sí encontramos la pieza registrada, procedemos a borrar y devolver stock
+                if (cantidadDevolver > 0)
+                {
+                    // 2. Borramos el registro de la tabla intermedia (servicio_refaccion)
+                    using (var cmdDelete = new MySqlCommand("DELETE FROM servicio_refaccion WHERE Folio = @fol AND Id_Refaccion = @idR", conexionAislada))
+                    {
+                        cmdDelete.Parameters.AddWithValue("@fol", folio);
+                        cmdDelete.Parameters.AddWithValue("@idR", idRefaccion);
+                        cmdDelete.ExecuteNonQuery();
+                    }
+
+                    // 3. Le regresamos el stock a nuestro inventario principal (refaccion)
+                    using (var cmdStock = new MySqlCommand("UPDATE refaccion SET Stock = Stock + @cant WHERE Id_Refaccion = @idR", conexionAislada))
+                    {
+                        cmdStock.Parameters.AddWithValue("@cant", cantidadDevolver);
+                        cmdStock.Parameters.AddWithValue("@idR", idRefaccion);
+                        cmdStock.ExecuteNonQuery();
+                    }
+                }
+            }
+
+            // 4. Redirigimos de vuelta a la página de Detalles para que el usuario vea la tabla actualizada
             return RedirectToAction("Detalles", new { id = folio });
         }
 
@@ -340,15 +417,31 @@ namespace AgenciaMVC1.Controllers
         }
 
         // 9. ACTUALIZAR ESTATUS
+
+        // 9. ACTUALIZAR ESTATUS
         [HttpPost]
         public IActionResult ActualizarEstatus(int folio, string nuevoEstatus)
         {
-            var conexion = ConexionBD.Instancia.ObtenerConexion();
-            using (var cmd = new MySqlCommand("UPDATE servicio SET Estatus=@est WHERE Folio=@fol", conexion))
+            // 1. TRADUCCIÓN: Le ponemos el espacio exacto que exige MySQL
+            string estatusParaBD = nuevoEstatus;
+            if (nuevoEstatus == "EnEspera") estatusParaBD = "En Espera";
+            else if (nuevoEstatus == "EnProceso") estatusParaBD = "En Proceso";
+
+            var conexionGlobal = ConexionBD.Instancia.ObtenerConexion();
+            string cadenaConexion = conexionGlobal.ConnectionString;
+
+            // 2. Conexión aislada para evitar chocar con otras consultas
+            using (var conexionAislada = new MySqlConnection(cadenaConexion))
             {
-                cmd.Parameters.AddWithValue("@est", nuevoEstatus);
-                cmd.Parameters.AddWithValue("@fol", folio);
-                cmd.ExecuteNonQuery();
+                conexionAislada.Open();
+                using (var cmd = new MySqlCommand("UPDATE servicio SET Estatus=@est WHERE Folio=@fol", conexionAislada))
+                {
+                    // ¡Enviamos la variable traducida con el espacio!
+                    cmd.Parameters.AddWithValue("@est", estatusParaBD);
+                    cmd.Parameters.AddWithValue("@fol", folio);
+
+                    cmd.ExecuteNonQuery();
+                }
             }
             return RedirectToAction("Detalles", new { id = folio });
         }

@@ -19,13 +19,15 @@
             <div class="mb-3">
                 <label class="form-label">Tipo de Mantenimiento</label>
                 <div class="form-check">
-                    <input class="form-check-input" type="radio" name="tipo" id="tipoPrev" value="Preventivo" required>
+                    <!-- Cambiamos el name a Id_Tipo_Serv y el value a 1 -->
+                    <input class="form-check-input" type="radio" name="Id_Tipo_Serv" id="tipoPrev" value="1" required>
                     <label class="form-check-label" for="tipoPrev">
                         <strong>Preventivo</strong> (Revisión de rutina, niveles, filtros)
                     </label>
                 </div>
                 <div class="form-check">
-                    <input class="form-check-input" type="radio" name="tipo" id="tipoCorr" value="Correctivo" required>
+                    <!-- Cambiamos el name a Id_Tipo_Serv y el value a 2 -->
+                    <input class="form-check-input" type="radio" name="Id_Tipo_Serv" id="tipoCorr" value="2" required>
                     <label class="form-check-label" for="tipoCorr">
                         <strong>Correctivo</strong> (Reparación de fallas, cambio de piezas rotas)
                     </label>
