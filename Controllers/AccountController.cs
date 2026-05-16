@@ -17,14 +17,19 @@ namespace AgenciaMVC1.Controllers
             return View();
         }
 
-        // POST: Login
+        // POST: Login (MODIFICADO PARA AMBAS TABLAS)
         [HttpPost]
         public IActionResult Login(string usuario, string password)
         {
             try
             {
                 var connection = ConexionBD.Instancia.ObtenerConexion();
-                string query = "SELECT * FROM administrador WHERE Usuario = @user AND Password = @pass";
+
+                // Consulta combinada inteligente para validar credenciales en ambas tablas
+                string query = @"SELECT Id_Admin AS Id, Usuario, Nombre, 'Administrador' AS Rol FROM administrador WHERE Usuario = @user AND Password = @pass
+                                 UNION
+                                 SELECT Id_Usuario AS Id, Usuario, Nombre, Rol FROM usuarios WHERE Usuario = @user AND Password = @pass";
+
                 MySqlCommand cmd = new MySqlCommand(query, connection);
                 cmd.Parameters.AddWithValue("@user", usuario);
                 cmd.Parameters.AddWithValue("@pass", password);
@@ -33,14 +38,17 @@ namespace AgenciaMVC1.Controllers
                 {
                     if (reader.Read())
                     {
-                        Administrador admin = new Administrador
-                        {
-                            IdAdmin = Convert.ToInt32(reader["Id_Admin"]),
-                            Usuario = reader["Usuario"].ToString(),
-                            Nombre = reader["Nombre"].ToString()
-                        };
-                        HttpContext.Session.SetString("UsuarioNombre", admin.Nombre);
-                        HttpContext.Session.SetInt32("AdminId", admin.IdAdmin);
+                        int idIdentificado = Convert.ToInt32(reader["Id"]);
+                        string nombreIdentificado = reader["Nombre"].ToString();
+                        string rolIdentificado = reader["Rol"].ToString();
+
+                        // Guardamos los datos esenciales en la sesión global
+                        HttpContext.Session.SetString("UsuarioNombre", nombreIdentificado);
+                        HttpContext.Session.SetString("UsuarioRol", rolIdentificado);
+
+                        // Mantenemos 'AdminId' para que tus controladores como ServicioController (que lo usan para auditoría) sigan funcionando sin romperse
+                        HttpContext.Session.SetInt32("AdminId", idIdentificado);
+
                         return RedirectToAction("Index", "Home");
                     }
                 }
@@ -94,7 +102,7 @@ namespace AgenciaMVC1.Controllers
             {
                 var conexion = ConexionBD.Instancia.ObtenerConexion();
 
-                // Verificar si el usuario ya existe
+                // Verificar si el usuario ya existe en administradores
                 using (var cmdCheck = new MySqlCommand("SELECT COUNT(*) FROM administrador WHERE Usuario = @usr", conexion))
                 {
                     cmdCheck.Parameters.AddWithValue("@usr", usuario);
@@ -131,7 +139,6 @@ namespace AgenciaMVC1.Controllers
         [ValidarSesion]
         public IActionResult EliminarAdmin(int id)
         {
-            // No permitir eliminar al admin que está en sesión
             int adminActual = HttpContext.Session.GetInt32("AdminId") ?? 0;
             if (id == adminActual)
             {

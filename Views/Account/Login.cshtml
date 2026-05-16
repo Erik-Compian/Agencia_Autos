@@ -1,7 +1,6 @@
 ﻿@{
     Layout = null; // Para que no use el menú principal en el login
 }
-
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -9,8 +8,19 @@
     <title>Login - Agencia de Automóviles</title>
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     <style>
-        body { background: #f8f9fa; display: flex; align-items: center; height: 100vh; }
-        .login-card { width: 100%; max-width: 400px; padding: 15px; margin: auto; }
+            body {
+                background: #f8f9fa;
+                display: flex;
+                align-items: center;
+                height: 100vh;
+            }
+
+            .login-card {
+                width: 100%;
+                max-width: 400px;
+                padding: 15px;
+                margin: auto;
+            }
     </style>
 </head>
 <body>
@@ -32,7 +42,14 @@
                 }
                 <button type="submit" class="btn btn-primary w-100">Ingresar</button>
             </form>
+
+            <div class="text-center mt-4 border-top pt-3">
+                <p class="mb-1 text-muted" style="font-size: 0.85em;">¿Eres nuevo personal del taller?</p>
+                <a asp-controller="Usuario" asp-action="Crear" class="btn btn-outline-secondary btn-sm w-100">
+                    Solicitar Cuenta de Usuario
+                </a>
+            </div>
+
         </div>
-    </div>
-</body>
+    </div></body>
 </html>

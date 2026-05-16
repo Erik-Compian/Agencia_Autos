@@ -7,58 +7,58 @@
 <head>
     <title>Ticket_#@Model.Folio</title>
     <style>
-        body {
-            font-family: 'Courier New', Courier, monospace;
-            width: 80mm;
-            margin: 0 auto;
-            padding: 15px;
-            border: 1px solid #eee;
-            font-size: 0.85em;
-        }
-
-        .header {
-            text-align: center;
-            border-bottom: 1px dashed #000;
-            margin-bottom: 10px;
-            padding-bottom: 8px;
-        }
-
-        .fila {
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 4px;
-        }
-
-            .fila span:first-child {
-                flex: 1;
-                padding-right: 8px;
+            body {
+                font-family: 'Courier New', Courier, monospace;
+                width: 80mm;
+                margin: 0 auto;
+                padding: 15px;
+                border: 1px solid #eee;
+                font-size: 0.85em;
             }
 
-            .fila span:last-child {
-                white-space: nowrap;
+            .header {
+                text-align: center;
+                border-bottom: 1px dashed #000;
+                margin-bottom: 10px;
+                padding-bottom: 8px;
             }
 
-        .total {
-            display: flex;
-            justify-content: space-between;
-            font-weight: bold;
-            font-size: 1.1em;
-            margin-top: 6px;
-        }
-
-        hr {
-            border-top: 1px dashed #000;
-        }
-
-        .centrado {
-            text-align: center;
-        }
-
-        @@media print {
-            .no-print {
-                display: none;
+            .fila {
+                display: flex;
+                justify-content: space-between;
+                margin-bottom: 4px;
             }
-        }
+
+                .fila span:first-child {
+                    flex: 1;
+                    padding-right: 8px;
+                }
+
+                .fila span:last-child {
+                    white-space: nowrap;
+                }
+
+            .total {
+                display: flex;
+                justify-content: space-between;
+                font-weight: bold;
+                font-size: 1.1em;
+                margin-top: 6px;
+            }
+
+            hr {
+                border-top: 1px dashed #000;
+            }
+
+            .centrado {
+                text-align: center;
+            }
+
+            @@media print {
+                .no-print {
+                    display: none;
+                }
+            }
     </style>
 </head>
 <body onload="window.print()">
@@ -100,6 +100,16 @@
         <span>$@Model.Refacciones.Sum(r => r.PrecioAplicado).ToString("0.00")</span>
     </div>
 
+    @if (Model.FechaProximoServicio.HasValue)
+    {
+        <div style="border: 1px dashed #000; padding: 8px; margin: 15px 0; text-align: center; background-color: #fafafa;">
+            <strong style="font-size: 0.9em;">* PRÓXIMO MANTENIMIENTO *</strong><br />
+            <span style="font-size: 1.1em; font-weight: bold;">
+                @Model.FechaProximoServicio.Value.ToString("dd/MM/yyyy")
+            </span>
+        </div>
+    }
+
     <div class="centrado" style="margin-top: 20px;">
         <p>_______________________</p>
         <p style="font-size:0.8em;">Firma del Cliente</p>
@@ -108,7 +118,5 @@
 
     <div class="centrado no-print" style="margin-top: 12px;">
         <button onclick="window.close()" style="font-family: 'Courier New'; padding: 6px 16px;">Cerrar Ventana</button>
-    </div>
-
-</body>
+    </div></body>
 </html>
