@@ -1,0 +1,49 @@
+﻿@model IEnumerable<AgenciaMVC1.Models.Administrador>
+
+<div class="container-fluid py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>Gestión de Administradores</h2>
+        <a href="/Account/NuevoAdmin" class="btn btn-success">+ Nuevo Administrador</a>
+    </div>
+
+    @if (TempData["Exito"] != null)
+    {
+        <div class="alert alert-success">@TempData["Exito"]</div>
+    }
+    @if (TempData["Error"] != null)
+    {
+        <div class="alert alert-danger">@TempData["Error"]</div>
+    }
+
+    <div class="table-responsive shadow-sm border rounded bg-white">
+        <table class="table table-striped table-hover mb-0">
+            <thead class="table-dark">
+                <tr>
+                    <th>ID</th>
+                    <th>Nombre</th>
+                    <th>Usuario</th>
+                    <th>Email</th>
+                    <th class="text-center">Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var admin in Model)
+                {
+                    <tr>
+                        <td>#@admin.IdAdmin</td>
+                        <td>@admin.Nombre</td>
+                        <td>@admin.Usuario</td>
+                        <td>@admin.Email</td>
+                        <td class="text-center">
+                            <form asp-action="EliminarAdmin" method="post"
+                                  onsubmit="return confirm('¿Eliminar al administrador @admin.Nombre?');">
+                                <input type="hidden" name="id" value="@admin.IdAdmin" />
+                                <button type="submit" class="btn btn-sm btn-danger">Eliminar</button>
+                            </form>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>

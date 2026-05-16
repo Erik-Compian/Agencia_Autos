@@ -427,11 +427,18 @@ namespace AgenciaMVC1.Controllers
         {
             List<SelectListItem> lista = new List<SelectListItem>();
             var conexion = ConexionBD.Instancia.ObtenerConexion();
-            using (var cmd = new MySqlCommand("SELECT Id_Vehiculo, Placa FROM vehiculo", conexion))
+            using (var cmd = new MySqlCommand(@"SELECT v.Id_Vehiculo, v.Placa, 
+                                               c.Nombre, c.Apellido 
+                                        FROM vehiculo v
+                                        INNER JOIN cliente c ON v.Id_Cliente = c.Id_Cliente", conexion))
             using (var r = cmd.ExecuteReader())
             {
                 while (r.Read())
-                    lista.Add(new SelectListItem { Value = r["Id_Vehiculo"].ToString(), Text = r["Placa"].ToString() });
+                    lista.Add(new SelectListItem
+                    {
+                        Value = r["Id_Vehiculo"].ToString(),
+                        Text = $"{r["Placa"]} — {r["Nombre"]} {r["Apellido"]}"
+                    });
             }
             return lista;
         }

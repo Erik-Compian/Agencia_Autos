@@ -35,11 +35,20 @@
                             <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
                                 <li><a class="dropdown-item" asp-controller="Marca" asp-action="Index">Marcas</a></li>
                                 <li><a class="dropdown-item" asp-controller="Modelo" asp-action="Index">Modelos</a></li>
-                                <a class="dropdown-item" asp-controller="Refaccion" asp-action="Index">Refacciones</a>
+                                <li><a class="dropdown-item" asp-controller="Refaccion" asp-action="Index">Refacciones</a></li>
                             </ul>
                         </li>
                         <li class="nav-item">
-                             <a class="nav-link text-dark fw-bold" asp-area="" asp-controller="Servicio" asp-action="Dashboard">📈 Dashboard</a>
+                            <a class="nav-link text-white" asp-controller="Servicio" asp-action="Index">Taller</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link text-white" asp-controller="Servicio" asp-action="Agenda">Agenda</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link text-white" asp-controller="Servicio" asp-action="Dashboard">📈 Dashboard</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link text-white" asp-controller="Account" asp-action="Administradores">Administradores</a>
                         </li>
                     </ul>
 
@@ -51,11 +60,6 @@
                         </li>
                         <li class="nav-item">
                             <a class="btn btn-outline-danger btn-sm" asp-controller="Account" asp-action="Logout">Cerrar Sesión</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-controller="Servicio" asp-action="Agenda">
-                                 <i class="bi bi-calendar3"></i> Agenda
-                            </a>
                         </li>
                     </ul>
                 </div>
