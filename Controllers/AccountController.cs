@@ -66,6 +66,13 @@ namespace AgenciaMVC1.Controllers
         [ValidarSesion]
         public IActionResult Administradores()
         {
+            // VALIDACIÓN DE ROL: Si no es Administrador, lo regresa al inicio
+            if (HttpContext.Session.GetString("UsuarioRol") != "Administrador")
+            {
+                TempData["Error"] = "Acceso denegado. Esta área es solo para administradores.";
+                return RedirectToAction("Index", "Home");
+            }
+
             List<Administrador> lista = new List<Administrador>();
             var conexion = ConexionBD.Instancia.ObtenerConexion();
 
@@ -90,6 +97,12 @@ namespace AgenciaMVC1.Controllers
         [ValidarSesion]
         public IActionResult NuevoAdmin()
         {
+            // VALIDACIÓN DE ROL: Si no es Administrador, lo regresa al inicio
+            if (HttpContext.Session.GetString("UsuarioRol") != "Administrador")
+            {
+                return RedirectToAction("Index", "Home");
+            }
+
             return View();
         }
 
@@ -98,6 +111,12 @@ namespace AgenciaMVC1.Controllers
         [ValidarSesion]
         public IActionResult NuevoAdmin(string nombre, string usuario, string password, string email)
         {
+            // VALIDACIÓN DE ROL: Si no es Administrador, lo regresa al inicio
+            if (HttpContext.Session.GetString("UsuarioRol") != "Administrador")
+            {
+                return RedirectToAction("Index", "Home");
+            }
+
             try
             {
                 var conexion = ConexionBD.Instancia.ObtenerConexion();
@@ -139,6 +158,12 @@ namespace AgenciaMVC1.Controllers
         [ValidarSesion]
         public IActionResult EliminarAdmin(int id)
         {
+            // VALIDACIÓN DE ROL: Si no es Administrador, lo regresa al inicio
+            if (HttpContext.Session.GetString("UsuarioRol") != "Administrador")
+            {
+                return RedirectToAction("Index", "Home");
+            }
+
             int adminActual = HttpContext.Session.GetInt32("AdminId") ?? 0;
             if (id == adminActual)
             {

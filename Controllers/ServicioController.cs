@@ -21,8 +21,9 @@ namespace AgenciaMVC1.Controllers
             List<Servicio> lista = new List<Servicio>();
             var conexion = ConexionBD.Instancia.ObtenerConexion();
 
+            // CORRECCIÓN: Cambiamos el alias a FechaProgramada para evitar el choque con s.*
             string query = @"SELECT s.*, v.Placa, c.Nombre as NomCli, c.Apellido as ApeCli,
-                                    ps.Fecha_Prog as Fecha_Proximo_Servicio
+                                    ps.Fecha_Prog as FechaProgramada
                              FROM servicio s
                              INNER JOIN vehiculo v ON s.Id_Vehiculo = v.Id_Vehiculo
                              INNER JOIN cliente c ON v.Id_Cliente = c.Id_Cliente
@@ -50,9 +51,10 @@ namespace AgenciaMVC1.Controllers
                         {
                             Folio = Convert.ToInt32(reader["Folio"]),
                             FechaIngreso = Convert.ToDateTime(reader["Fecha_Ingreso"]),
-                            FechaProximoServicio = reader["Fecha_Proximo_Servicio"] == DBNull.Value
+                            // Leemos el nuevo alias correcto
+                            FechaProximoServicio = reader["FechaProgramada"] == DBNull.Value
                                 ? (DateTime?)null
-                                : Convert.ToDateTime(reader["Fecha_Proximo_Servicio"]),
+                                : Convert.ToDateTime(reader["FechaProgramada"]),
                             Estatus = estatusSeguro,
                             Descripcion = reader["Descripcion"].ToString(),
                             QuienEntrego = reader["Quien_Entrego"].ToString(),
@@ -124,9 +126,10 @@ namespace AgenciaMVC1.Controllers
             Servicio servicio = null;
             var conexion = ConexionBD.Instancia.ObtenerConexion();
 
+            // CORRECCIÓN: Alias FechaProgramada
             string query = @"SELECT s.*, v.Placa, v.Color, v.Km_Actual,
                                     c.Nombre as NomCli, c.Apellido as ApeCli, c.Telefono,
-                                    ps.Fecha_Prog as Fecha_Proximo_Servicio
+                                    ps.Fecha_Prog as FechaProgramada
                              FROM servicio s
                              INNER JOIN vehiculo v ON s.Id_Vehiculo = v.Id_Vehiculo
                              INNER JOIN cliente c ON v.Id_Cliente = c.Id_Cliente
@@ -149,9 +152,10 @@ namespace AgenciaMVC1.Controllers
                         {
                             Folio = Convert.ToInt32(reader["Folio"]),
                             FechaIngreso = Convert.ToDateTime(reader["Fecha_Ingreso"]),
-                            FechaProximoServicio = reader["Fecha_Proximo_Servicio"] == DBNull.Value
+                            // Leemos el nuevo alias
+                            FechaProximoServicio = reader["FechaProgramada"] == DBNull.Value
                                 ? (DateTime?)null
-                                : Convert.ToDateTime(reader["Fecha_Proximo_Servicio"]),
+                                : Convert.ToDateTime(reader["FechaProgramada"]),
                             Estatus = estatusSeguro,
                             Descripcion = reader["Descripcion"].ToString(),
                             QuienEntrego = reader["Quien_Entrego"].ToString(),
@@ -323,35 +327,42 @@ namespace AgenciaMVC1.Controllers
             return View("~/Views/Servicio/Dashboard.cshtml", conteos);
         }
 
-        // 7. REGISTRO PRÓXIMO SERVICIO
+        // 7. REGISTRO PRÓXIMO SERVICIO (MEJORADO CON CONEXIÓN AISLADA)
         [HttpPost]
         public IActionResult GuardarProximoServicio(int folio, DateTime fecha)
         {
-            var conexion = ConexionBD.Instancia.ObtenerConexion();
-            int existe = 0;
+            var conexionGlobal = ConexionBD.Instancia.ObtenerConexion();
+            string cadenaConexion = conexionGlobal.ConnectionString;
 
-            using (var cmd = new MySqlCommand("SELECT COUNT(*) FROM proximo_servicio WHERE Folio = @fol", conexion))
+            // Usamos conexión aislada para evitar conflictos o bloqueos
+            using (var conexionAislada = new MySqlConnection(cadenaConexion))
             {
-                cmd.Parameters.AddWithValue("@fol", folio);
-                existe = Convert.ToInt32(cmd.ExecuteScalar());
-            }
+                conexionAislada.Open();
+                int existe = 0;
 
-            if (existe > 0)
-            {
-                using (var cmd = new MySqlCommand("UPDATE proximo_servicio SET Fecha_Prog = @fec WHERE Folio = @fol", conexion))
+                using (var cmd = new MySqlCommand("SELECT COUNT(*) FROM proximo_servicio WHERE Folio = @fol", conexionAislada))
                 {
-                    cmd.Parameters.AddWithValue("@fec", fecha);
                     cmd.Parameters.AddWithValue("@fol", folio);
-                    cmd.ExecuteNonQuery();
+                    existe = Convert.ToInt32(cmd.ExecuteScalar());
                 }
-            }
-            else
-            {
-                using (var cmd = new MySqlCommand("INSERT INTO proximo_servicio (Folio, Fecha_Prog) VALUES (@fol, @fec)", conexion))
+
+                if (existe > 0)
                 {
-                    cmd.Parameters.AddWithValue("@fol", folio);
-                    cmd.Parameters.AddWithValue("@fec", fecha);
-                    cmd.ExecuteNonQuery();
+                    using (var cmd = new MySqlCommand("UPDATE proximo_servicio SET Fecha_Prog = @fec WHERE Folio = @fol", conexionAislada))
+                    {
+                        cmd.Parameters.AddWithValue("@fec", fecha);
+                        cmd.Parameters.AddWithValue("@fol", folio);
+                        cmd.ExecuteNonQuery();
+                    }
+                }
+                else
+                {
+                    using (var cmd = new MySqlCommand("INSERT INTO proximo_servicio (Folio, Fecha_Prog) VALUES (@fol, @fec)", conexionAislada))
+                    {
+                        cmd.Parameters.AddWithValue("@fol", folio);
+                        cmd.Parameters.AddWithValue("@fec", fecha);
+                        cmd.ExecuteNonQuery();
+                    }
                 }
             }
 
@@ -364,7 +375,7 @@ namespace AgenciaMVC1.Controllers
             List<Servicio> agenda = new List<Servicio>();
             var conexion = ConexionBD.Instancia.ObtenerConexion();
 
-            string query = @"SELECT s.Folio, ps.Fecha_Prog as Fecha_Proximo_Servicio,
+            string query = @"SELECT s.Folio, ps.Fecha_Prog as FechaProgramada,
                                     v.Placa, c.Nombre as NomCli, c.Apellido as ApeCli, c.Telefono
                              FROM servicio s
                              INNER JOIN proximo_servicio ps ON s.Folio = ps.Folio
@@ -380,7 +391,7 @@ namespace AgenciaMVC1.Controllers
                     agenda.Add(new Servicio
                     {
                         Folio = Convert.ToInt32(reader["Folio"]),
-                        FechaProximoServicio = Convert.ToDateTime(reader["Fecha_Proximo_Servicio"]),
+                        FechaProximoServicio = Convert.ToDateTime(reader["FechaProgramada"]),
                         VehiculoAtendido = new Vehiculo
                         {
                             Placa = reader["Placa"].ToString(),

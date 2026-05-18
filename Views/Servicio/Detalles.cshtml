@@ -87,23 +87,43 @@
                 }
             </div>
         </div>
-    </div>
-    <div class="card shadow-sm border-primary mt-3">
-        <div class="card-header bg-primary text-white">
-            <h5 class="mb-0">Programar Próximo Servicio</h5>
-        </div>
-        <div class="card-body">
-            <form asp-action="GuardarProximoServicio" method="post" class="row g-2">
-                <input type="hidden" name="folio" value="@Model.Folio" />
-                <div class="col-8">
-                    <input type="date" name="fecha" class="form-control"
-                           value="@(Model.FechaProximoServicio?.ToString("yyyy-MM-dd"))" required />
+
+        <!-- 👇 SECCIÓN MODIFICADA PARA MOSTRAR EL ESTADO DE LA PRÓXIMA CITA 👇 -->
+        <div class="card shadow-sm border-primary mt-3">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0">Próximo Servicio</h5>
+            </div>
+            <div class="card-body">
+                <div class="mb-3">
+                    <strong>Cita Programada: </strong>
+                    @if (Model.FechaProximoServicio != null)
+                    {
+                        <span class="badge bg-info text-dark fs-6">
+                            @Convert.ToDateTime(Model.FechaProximoServicio).ToString("dd/MM/yyyy")
+                        </span>
+                    }
+                    else
+                    {
+                        <span class="text-muted fst-italic">Aún no se ha agendado una cita</span>
+                    }
                 </div>
-                <div class="col-4">
-                    <button type="submit" class="btn btn-primary w-100">Guardar</button>
-                </div>
-            </form>
+
+                <hr />
+
+                <form asp-action="GuardarProximoServicio" method="post" class="row g-2">
+                    <input type="hidden" name="folio" value="@Model.Folio" />
+                    <div class="col-8">
+                        <input type="date" name="fecha" class="form-control"
+                               value="@(Model.FechaProximoServicio?.ToString("yyyy-MM-dd"))" required />
+                    </div>
+                    <div class="col-4">
+                        <button type="submit" class="btn btn-primary w-100">Guardar</button>
+                    </div>
+                </form>
+            </div>
         </div>
+        <!-- 👆 FIN DE LA SECCIÓN MODIFICADA 👆 -->
+
     </div>
 </div>
 
